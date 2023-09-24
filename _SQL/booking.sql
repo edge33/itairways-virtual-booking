@@ -79,7 +79,7 @@ CREATE TABLE `timeframes` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `vid` int(11) NOT NULL,
+  `vid` varchar(11) NOT NULL,
   `firstname` varchar(30) NOT NULL,
   `lastname` varchar(30) NOT NULL,
   `rating_atc` varchar(3) NOT NULL,
@@ -91,7 +91,8 @@ CREATE TABLE `users` (
   `skype` varchar(30) NOT NULL,
   `staff` text NOT NULL,
   `permission` int(11) NOT NULL,
-  `last_login` datetime NOT NULL
+  `last_login` datetime NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
 
