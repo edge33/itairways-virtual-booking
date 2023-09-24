@@ -1,0 +1,68 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  build-node: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      - name: Install dependencies
+        run: npm ci
+
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install zip unzip lftp
+          php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+          php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+          php composer-setup.php
+          sudo composer self-update --2
+          php -r "unlink('composer-setup.php');"
+
+      - name: Install Composer dependencies
+        run: composer install --optimize-autoloader --no-dev
+
+      - name: Zip production app
+        run: zip -rq app.zip contents/* css/* img/* inc/* js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
+
+      - name: Zip deploy helper scripts
+        run: zip -rqj helpers.zip deploy-scripts/cleanup.php deploy-scripts/wipeFiles.php
+
+      - name: Upload helper scripts and unzipper
+        run: |
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} helpers.zip"
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} deploy-scripts/unzip.php"
+          curl -d "dir=.&file=helpers.zip" -X POST ${{ vars.HOST }}/unzip.php
+
+      - name: Remove old files
+        run:  curl ${{ vars.HOST }}/wipeFiles.php
+
+      - name: Upload new version
+        run: |
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} app.zip"
+          curl -d "dir=./&file=app.zip" -X POST ${{ vars.HOST }}/unzip.php
+
+      - name: Cleanup
+        run: curl ${{ vars.HOST }}/cleanup.php
