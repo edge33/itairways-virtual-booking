@@ -44,8 +44,10 @@ jobs:
 
   deploy:
     needs: [build-node, build-php]
+    environment: production
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Prepare
         run: sudo apt-get -y install zip unzip lftp
       
