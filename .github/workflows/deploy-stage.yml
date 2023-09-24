@@ -44,7 +44,7 @@ jobs:
 
   deploy:
     needs: [build-node, build-php]
-    environment: production
+    environment: PROD
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
