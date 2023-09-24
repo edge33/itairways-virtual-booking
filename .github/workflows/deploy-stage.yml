@@ -63,8 +63,8 @@ jobs:
 
       - name: Upload helper scripts and unzipper
         run: |
-          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} helpers.zip"
-          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} deploy-scripts/unzip.php"
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.DEPLOY_PATH }} helpers.zip"
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.DEPLOY_PATH }} deploy-scripts/unzip.php"
           curl -d "dir=.&file=helpers.zip" -X POST ${{ vars.HOST }}/unzip.php
 
       - name: Remove old files
@@ -72,7 +72,7 @@ jobs:
 
       - name: Upload new version
         run: |
-          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.FTP_HOST }} app.zip"
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};  put -O ${{ secrets.DEPLOY_PATH }} app.zip"
           curl -d "dir=./&file=app.zip" -X POST ${{ vars.HOST }}/unzip.php
 
       - name: Cleanup
