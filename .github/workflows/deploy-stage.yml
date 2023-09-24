@@ -44,7 +44,6 @@ jobs:
 
   deploy:
     needs: [build-node, build-php]
-    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Prepare
