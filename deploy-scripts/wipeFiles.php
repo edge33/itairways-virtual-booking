@@ -1,10 +1,10 @@
 <?php
 
-$files = glob('./*'); // get all file names
+$files = glob($path . '{,.}[!.,!..]*',GLOB_MARK|GLOB_BRACE);
 
 $files = array_filter($files, fn($file) => strpos($file, 'cgi-bin') == false);
 function removeDirectory($path) {
-    $files = glob($path . '/*');
+    $files = glob($path . '{,.}[!.,!..]*',GLOB_MARK|GLOB_BRACE);
     foreach ($files as $file) {
         is_dir($file) ? removeDirectory($file) : unlink($file);
     }

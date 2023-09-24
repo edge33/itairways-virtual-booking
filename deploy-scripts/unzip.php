@@ -17,6 +17,6 @@ function unzip ($dir, $file) {
     unlink("$dir/$file");
 }
 
-unzip(".", "sito.zip");
+unzip($dir, $file);
 
 ?>
