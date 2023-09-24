@@ -52,6 +52,9 @@ jobs:
       - name: Zip production app
         run: zip -rq app.zip contents/* css/* img/* inc/* js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
 
+      - name: List files
+        run: ls -la
+
       - name: Zip deploy helper scripts
         run: zip -rqj helpers.zip deploy-scripts/cleanup.php deploy-scripts/wipeFiles.php
 
