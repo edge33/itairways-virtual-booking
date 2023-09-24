@@ -19,7 +19,7 @@ jobs:
         run: npm ci
 
 
-  deploy:
+  build-php:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,6 +44,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --optimize-autoloader --no-dev
 
+  deploy:
+    needs: [build-node, build-php]
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
       - name: Zip production app
         run: zip -rq app.zip contents/* css/* img/* inc/* js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
 
@@ -66,3 +71,4 @@ jobs:
 
       - name: Cleanup
         run: curl ${{ vars.HOST }}/cleanup.php
+  
