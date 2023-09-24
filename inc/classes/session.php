@@ -52,7 +52,7 @@ class Session
 		}
 		else
 			redirect("login_ivao.php?url=" . $config["url"]);
-	}
+	    }
 	
 	/**
 	 * Function redirects to the specified page if we are not already there, and we're not on login and logout pages
@@ -93,11 +93,14 @@ class Session
 		*/
 		if ($config["mode"] != 1)
 		{
-			if (Session::LoggedIn() && Session::User()->permission < 2)
-				Session::IVAOLogout();
+			if (Session::LoggedIn() && Session::User()->permission < 2) {
+				Session::Logout();
+				// Session::IVAOLogout();
+			}
 			
-			if (!Session::LoggedIn())
+			if (!Session::LoggedIn()) {
 				Session::redirIfNotThere("maintenance");
+			}
 		}
 
 		/**
@@ -123,6 +126,13 @@ class Session
 		setcookie("IVAO_LOGIN", "", time()-3600);
 		redirect("/");
 	}
+
+	public static function Logout()
+	{
+		session_destroy();
+		redirect("/");
+	}
+	
 	
 	/**
 	 * Returns the currently logged in user object, otherwise returns null
@@ -196,7 +206,6 @@ class Session
 					die();
 				}
 			}
-
 			// In maintenace mode we accept GET requests as well
 			$requestArray = $config["maintenance"] ? $_REQUEST : $_POST;
 
@@ -432,6 +441,59 @@ class Session
 			{
 				if ($action == "updateGeneral")
 					echo json_encode(["error" => Config::UpdateGeneral($requestArray)]);
+
+				if ($action == "import_db") {
+					
+
+
+					if (Session::User()->permission < 2) {
+						echo json_encode(["error" => 401]);
+						die();
+					}
+
+					$csvFile = $_FILES["csvFile"]["tmp_name"];
+        
+					$users = User::GetAll();
+					$vids = [];
+
+					foreach ($users as $user) {
+						$vids[$user->vid] = $user->vid;
+					}
+
+					$newUsers = 0;
+					$usersToCreate = [];
+					if (($handle = fopen($csvFile, "r")) !== FALSE) {
+						// Loop through each row of the CSV file
+						fgetcsv($handle, 500, ",");
+						while (($data = fgetcsv($handle, 500, ",")) !== FALSE) {
+							// $data is an array containing the values from each column in the CSV row
+							// You can process and use these values as needed
+							// For example, you can access them like $data[0], $data[1], etc.
+							$vid = $data[1];
+							
+							if ($vids[$vid]) {
+								continue;
+							}
+							$firstname = $data[2];
+							$lastname = $data[3];
+							$password = $vid;
+						
+							$usersToCreate[] = ["permission" => "1", "vid" => $vid, "firstname" => $firstname, "lastname" => $lastname, "division" => "ITA Airways Virtual", "privacy" => "0", "password" => $password ];
+
+						}
+
+						if (count($usersToCreate) > 0) {
+							$newUsers = User::CreateAll($usersToCreate);
+						}
+
+						fclose($handle);
+					} else {
+						echo json_encode(["error" => "error opening csv file"]);
+						die();
+					}
+					echo json_encode(["result" => ["newUsers" => $newUsers]]);
+					die();
+				}	
 				die();
 			}	
 
@@ -479,6 +541,30 @@ class Session
 					}
 				}
 				die();
+			}
+
+			if ($type == "login") {
+				if ($action == "login") {
+
+					$vid = $requestArray["vid"];
+					$password = $requestArray["password"];
+					$user = User::FindVidAndPassword($vid, $password);
+					if ($user) {
+						$_SESSION["LOGIN"] = new stdClass();
+						$_SESSION["LOGIN"]->firstname = $user->firstname;
+						$_SESSION["LOGIN"]->lastname = $user->lastname;
+						$_SESSION["LOGIN"]->vid = $user->vid;
+						$_SESSION["LOGIN"]->ratingatc = $user->ratingAtc;
+						$_SESSION["LOGIN"]->ratingpilot = $user->ratingPilot;
+						$_SESSION["LOGIN"]->division = $user->division;
+						$_SESSION["LOGIN"]->country = $user->country;
+						$_SESSION["LOGIN"]->skype = $user->skype;
+						$_SESSION["LOGIN"]->staff = $user->staff;
+						echo json_encode(["result" => "success"]);
+					} else {
+						echo json_encode(["error" => "unauthorized"]);
+					}
+				} 
 			}
 
 			die();

@@ -20,10 +20,10 @@ class User
 	public static function Find($vid)
 	{
 		global $db;
-		if ($query = $db->GetSQL()->query("SELECT * FROM users WHERE vid=" . $vid))
+		if ($query = $db->GetSQL()->query("SELECT * FROM users WHERE vid='" . $vid . "'"))
 		{
 			if ($row = $query->fetch_assoc())
-				return new User($row);
+			return new User($row);
 		}
 		return null;
 	}
@@ -40,6 +40,32 @@ class User
 		{
 			if ($row = $query->fetch_assoc())
 				return new User($row);
+		}
+		return null;
+	}
+
+		/**
+	 * Returns a user found in the database based on its id, otherwise returns null
+	 * @param string $id
+	 * @return User
+	 */
+	public static function FindVidAndPassword($vid, $password)
+	{
+		global $db;
+		if ($query = $db->GetSQL()->query("SELECT * FROM users WHERE vid=" . "\"$vid\""))
+		{
+			if ($row = $query->fetch_assoc()) {
+				$user_password = $row['password_hash'];
+				$isHash = password_get_info($user_password)['algoName'] !== 'unknown';
+				if (!$isHash && $password === $user_password) {
+					$user_password = password_hash($password, PASSWORD_DEFAULT);
+					User::UpdatePassword($vid, $user_password);
+				} 
+
+				if (password_verify($password, $user_password)) {
+					return new User($row);
+				}
+			}
 		}
 		return null;
 	}
@@ -69,12 +95,54 @@ class User
 		if (Session::LoggedIn() && Session::User()->permission > 1)
 		{
 			global $db;
-			$query = "INSERT INTO users (permission, vid, firstname, lastname, division, email, privacy) VALUES (" . $array["permission"] . ", " . $array["vid"] . ", '" . $array["firstname"] . "', '" . $array["lastname"] . "', '" . $array["division"] . "', '" . $array["email"] . "', " . $array["privacy"] . ")";
+			$query = "INSERT INTO users (permission, vid, firstname, lastname, division, email, privacy, password_hash) VALUES (
+				{$array["permission"]},
+				'{$array["vid"]}',
+				'{$array["firstname"]}',
+				'{$array["lastname"]}',
+				'{$array["division"]}',
+				'{$array["email"]}',
+				{$array["privacy"]},
+				'{$array["password"]}'
+			)";
 			return $db->GetSQL()->query($query) ? 0 : -1;
 		}
 		else
 			return 403;
 	}
+
+	/**
+	 * Creates a new profile manually (used by the admin area through AJAX)
+	 * @return int error code: 0 = no error, -1 = other error, 403 = forbidden
+	 */
+	public static function CreateAll($array)
+	{
+		if (Session::LoggedIn() && Session::User()->permission > 1)
+		{
+			global $db;
+			$sql = $db->GetSQL();
+			$createdRows = 0;
+
+			$sql->autocommit(false);
+
+			$statement = $sql->prepare("INSERT INTO users (permission, vid, firstname, lastname, division, privacy, password_hash) VALUES (?,?,?,?,?,?,?)");
+			
+
+			foreach ($array as $user) {
+				$statement->bind_param("issssis", $user["permission"], $user["vid"], $user["firstname"], $user["lastname"], $user["division"], $user["privacy"], $user["password"]);
+				$statement->execute();
+				$createdRows += $statement->affected_rows;
+				$statement->reset(); // Reset the statement for the next iteration
+			}
+			
+			$sql->autocommit(true);
+
+			return $createdRows;
+		}
+		else
+			return 403;
+	}
+
 	
 	/**
 	 * Function is called by the Session::IVAOLogin() function if user does not exist
@@ -102,6 +170,19 @@ class User
 		return $db->GetSQL()->query($query);
 	}
 
+	public static function UpdatePassword($vid, $password_hash)
+	{
+		global $db;
+		// $query = "UPDATE users SET " . ($data->vid == 540147 ? "permission=2," : "") . " firstname='" . $data->firstname . "', lastname='" . $data->lastname . "', rating_atc=" . $data->ratingatc . ", rating_pilot=" . $data->ratingpilot . ", division='" . $data->division . "', country='" . $data->country . "', skype='" . $data->skype . "', staff='" . $data->staff . "', last_login=now() WHERE vid=" . $data->vid;
+		$sql = "UPDATE users SET password_hash = ? WHERE vid = ?";
+
+		$statement = $db->getSQL()->prepare($sql);
+		$statement->bind_param("ss", $password_hash, $vid);
+		
+		
+		return $statement->execute();
+	}
+
 	/**
 	 * Converts all users to JSON format
 	 * Used by the admin area through AJAX
@@ -120,7 +201,7 @@ class User
 	public function __construct($row)
 	{
 		$this->id = (int)$row["id"];
-		$this->vid = (int)$row["vid"];
+		$this->vid = $row["vid"];
 		$this->firstname = $row["firstname"];
 		$this->lastname = $row["lastname"];
 		$this->ratingAtc = (int)$row["rating_atc"];
@@ -132,6 +213,7 @@ class User
 		$this->permission = (int)$row["permission"];
 		$this->email = $row["email"];
 		$this->privacy = $row["privacy"] == true;
+		$this->password_hash = $row["password_hash"];
 	}
 	
 	/**
@@ -202,9 +284,19 @@ class User
 	{
 		if (Session::LoggedIn() && Session::User()->permission > 1)
 		{
+			
+
 			global $db;
-			$query = "UPDATE users SET vid=" . $array["vid"] . ", firstname='" . $array["firstname"] . "', lastname='" . $array["lastname"] . "', division='" . $array["division"] . "', permission=" . $array["permission"] . ", email='" . $array["email"] . "', privacy=" . $array["privacy"] . " WHERE id=" . $this->id;
-			return $db->GetSQL()->query($query) ? 0 : -1;
+			$query = "UPDATE users SET vid=?, firstname=?, lastname=?, division=?, permission=?, email=?, privacy=?, password_hash=? WHERE id=?";
+			$statement = $db->GetSQL()->prepare($query);
+
+
+			$password = $array["password"] ? password_hash($array["password"], PASSWORD_DEFAULT) : $this->password_hash;
+			$statement->bind_param("ssssdsssi", $array["vid"], $array["firstname"], $array["lastname"], $array["division"], $array["permission"], $array["email"], $array["privacy"], $password, $array["id"]);
+
+			$result = $statement->execute();
+			$statement->close();
+			return $result ? 0 : -1;
 		}
 		else
 			return 403;
@@ -218,8 +310,17 @@ class User
 	public function UpdateProfile($array)
 	{
 		global $db;
-		$query = "UPDATE users SET email='" . $array["email"] . "', privacy=" . $array["privacy"] . " WHERE vid=" . $this->vid;
-		return $db->GetSQL()->query($query) ? 0 : -1;
+		
+
+		$password = $array["password"] ? password_hash($array["password"], PASSWORD_DEFAULT) : $this->password_hash;
+		
+		$query = "UPDATE users SET email=?, privacy=?, password_hash=? WHERE vid=?";
+		$statement = $db->GetSQL()->prepare($query);
+        $statement->bind_param("ssss", $array["email"], $array["privacy"], $password, $this->vid);
+		$result = $statement->execute();
+
+		$statement->close();
+		return $result ? 0 : -1;
 	}
 	
 	/**
@@ -244,6 +345,8 @@ class User
 	public function ToJson($flightsNeeded = true, $gdpr = false)
 	{
 		$user = (array)$this;
+
+		unset($user["password_hash"]);
 		
 		// unsetting personal data - visible in the JSON feed!
 		if (!$gdpr)

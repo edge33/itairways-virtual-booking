@@ -9,7 +9,7 @@
 
 // only for debug purposes
 // ini_set("display_errors", "on");
-// error_reporting(E_ALL);
+// error_reporting(E_ERROR);
 
 date_default_timezone_set('Etc/UTC');
 require 'config-inc.php';
@@ -97,11 +97,8 @@ Pages::AddJS("main");
 
 switch ($page)
 {
-	case "login":
-		Session::IVAOLogin();
-		break;
 	case "logout":
-		Session::IVAOLogout();
+		Session::Logout();
 		break;
 	default:
 		Pages::Add($page);
@@ -129,7 +126,7 @@ echo Pages::Get();
 <?php endif; ?>
 			</div>
 			<div class="col-md-4 text-md-right">
-				<p>Developed by <a href="https://www.ivao.aero/Member.aspx?ID=540147" target="_blank">Donat Marko (540147)</a></p>
+				<p>Developed by <a href="https://www.ivao.aero/Member.aspx?ID=540147" target="_blank">Donat Marko (540147)</a> <br/> <a href="https://efem.dev" target="_blank">Francesco Maida</a></p>
 			</div>
 		</div>
 	</div>

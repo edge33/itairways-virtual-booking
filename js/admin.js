@@ -212,39 +212,47 @@ function aCloseAirport()
 
 function aGetUsers()
 {
-	$.ajax({
-		cache: false,
-		type: "POST",
-		url: "json",
-		data: { "type": "users", "action": "getall" },
-		success: function(data) {			
-			var content = "";
-			for (var i = 0; i < data.length; i++)
-			{
-				content += '<tr style="cursor: pointer" onclick="aGetUser(' + data[i].id + ')" id="user' + data[i].id +'">';
-				content += '<td>' + data[i].vid + '</td>';
-				content += '<td>' + data[i].firstname + ' ' + data[i].lastname + '</td>';
-				content += '<td>' + data[i].divisionBadge + '</td>';
-				content += '<td>' + (data[i].email.length < 1 ? "(not set)" : data[i].email) + '</td>';
-
-				switch (Number(data[i].permission))
+	/**
+	 * this timeout allows spinner to display 
+	 * if an async call starts right after 
+	 * the previous has been completed
+	 */
+	setTimeout(() => {
+		$.ajax({
+			cache: false,
+			type: "POST",
+			url: "json",
+			data: { "type": "users", "action": "getall" },
+			success: function(data) {			
+				var content = "";
+				for (var i = 0; i < data.length; i++)
 				{
-					case 0:
-						content += '<td>banned</td>';
-						break;
-					case 1:
-						content += '<td>normal</td>';
-						break;
-					case 2:
-						content += '<td>administrator</td>';
-						break;
+					content += '<tr style="cursor: pointer" onclick="aGetUser(' + data[i].id + ')" id="user' + data[i].id +'">';
+					content += '<td>' + data[i].vid + '</td>';
+					content += '<td>' + data[i].firstname + ' ' + data[i].lastname + '</td>';
+					content += '<td>' + data[i].divisionBadge + '</td>';
+					content += '<td>' + (data[i].email.length < 1 ? "(not set)" : data[i].email) + '</td>';
+	
+					switch (Number(data[i].permission))
+					{
+						case 0:
+							content += '<td>banned</td>';
+							break;
+						case 1:
+							content += '<td>normal</td>';
+							break;
+						case 2:
+							content += '<td>administrator</td>';
+							break;
+					}
+					
+					content += '</tr>';
 				}
-				
-				content += '</tr>';
+				$("#tblUsers").find("tbody").html(content);
 			}
-			$("#tblUsers").find("tbody").html(content);
-		}
-	});
+		});
+		
+	}, 0);
 }
 
 function aGetUser(id)
@@ -257,7 +265,7 @@ function aGetUser(id)
 		success: function(data) {
 			$("#lblUser").html("Edit user");
 			$("#userId").val(data.id);
-			$("#numUserVid").val(Number(data.vid));
+			$("#numUserVid").val(data.vid);
 			$("#txtUserFirstname").val(data.firstname);
 			$("#txtUserLastname").val(data.lastname);
 			$("#txtUserDivision").val(data.division);
@@ -356,6 +364,8 @@ $("#frmUserEdit").submit(function(e) {
 	var lastname = $("#txtUserLastname").val();
 	var division = $("#txtUserDivision").val().toUpperCase();
 	var email = $("#txtUserEmail").val();
+	var password = $("#txtPassword").val();
+	$("#txtPassword").val("");
 	var permission = $("#selUserPermission").val();
 	var privacy = $("#chkUserPrivacy").is(":checked");
 	
@@ -365,7 +375,7 @@ $("#frmUserEdit").submit(function(e) {
 			cache: false,
 			type: "POST",
 			url: "json",
-			data: { "type": "users", "action": "create", "vid": vid, "firstname": firstname, "lastname": lastname, "division": division, "email": email, "permission": permission, "privacy": privacy },
+			data: { "type": "users", "action": "create", "vid": vid, "firstname": firstname, "lastname": lastname, "division": division, "email": email, "permission": permission, "privacy": privacy, password },
 			success: function(data) { 
 				if (data && data.error == 0)
 				{
@@ -387,7 +397,7 @@ $("#frmUserEdit").submit(function(e) {
 			cache: false,
 			type: "POST",
 			url: "json",
-			data: { "type": "users", "id": id, "action": "update", "vid": vid, "firstname": firstname, "lastname": lastname, "division": division, "email": email, "permission": permission, "privacy": privacy },
+			data: { "type": "users", "id": id, "action": "update", "vid": vid, "firstname": firstname, "lastname": lastname, "division": division, "email": email, "permission": permission, "privacy": privacy, password },
 			success: function(data) { 
 				if (data && data.error == 0)
 				{

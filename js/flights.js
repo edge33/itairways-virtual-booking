@@ -2,7 +2,7 @@ $(document).ready(function() {
 	$.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex) {
 		var checked = $('#fltOnlyFree').is(':checked');
 		
-		if (checked && aData[6] == "free")
+		if (checked && aData[7] == "free")
 			return true;
 		if (!checked)
 			return true;
@@ -424,4 +424,54 @@ $("#chkFltArrivalAuto").on("change", function() {
 
 $("#chkFltDepartureAuto").on("change", function() {
 	$("#dtpFltDeparture input").prop("disabled", $(this).is(":checked"));
+});
+
+
+$("#dbUpload").on('click',function() {
+	// Get the selected file
+	$('#file-alert').css('display','none');
+	$('#file-upload-error').css('display','none');
+	$('#file-upload-success').css('display','none');
+	var fileInput = $("#csvFile")[0];
+	var file = fileInput.files[0];
+
+
+	if (!file) {
+		return;
+	}
+
+	if (!file.name.endsWith(".csv")) {
+		$('#file-alert').css('display','block');
+		
+		return;
+	}
+	
+	if (file) {
+		// Create a FormData object to send the file
+		var formData = new FormData();
+		formData.append("csvFile", file);
+		formData.append("type", "admin");
+		formData.append("action", "import_db");
+		formData.append("xsrfToken", XSRF_TOKEN)
+
+		// Make an AJAX request to upload the file
+		$.ajax({
+			url: "json", // Replace with the server-side script URL
+			type: "POST",
+			data: formData,
+			contentType: false,
+			processData: false,
+			success: function(response) {
+				if ('error' in response) {
+					console.log('error in response', response)
+					$('#file-upload-error').css('display','block');
+				} else {
+					$('#file-upload-success').css('display','block');
+					$('#file-upload-success').text("Import success, new users added: " + response.result.newUsers);				
+				}
+			},
+		});
+	} else {
+		alert("Please select a CSV file to upload.");
+	}
 });

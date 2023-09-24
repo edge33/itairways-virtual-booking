@@ -258,7 +258,7 @@ foreach ($flts as $flt)
 								<div class="form-group row">
 									<label class="col-sm-2 col-form-label">VID:</label>
 									<div class="col-sm-10">
-										<input class="form-control" type="number" id="numUserVid" maxlength="6" required placeholder="e.g. 540147">
+										<input class="form-control" type="text" id="numUserVid" required placeholder="e.g ITY1000">
 									</div>
 								</div>
 								<div class="form-group row">
@@ -284,6 +284,12 @@ foreach ($flts as $flt)
 									<label class="col-sm-2 col-form-label">Email address:</label>
 									<div class="col-sm-10">
 										<input class="form-control" type="email" id="txtUserEmail" placeholder="leave empty if don't want to disclose">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Password:</label>
+									<div class="col-sm-10">
+										<input class="form-control" type="password" id="txtPassword">
 									</div>
 								</div>
 								<div class="form-group row">
@@ -338,6 +344,22 @@ foreach ($flts as $flt)
 					<div class="bd-callout bd-callout-info">
 						<h4>Important info regarding privacy</h4>
 						<p>Do not modify/add email address and change the privacy setting (name visibility) without the consent of the member due to privacy (GDPR) regulations!</p>
+					</div>
+
+					<div >
+						<label for="formFile" class="form-label">Upload pilot database (CSV only)</label>
+  						<input class="form-control-file" type="file" id="csvFile">
+						<button type="button" class="btn btn-primary mt-2" id="dbUpload">Upload file</button>
+						<div class="alert alert-danger mt-2" role="alert" id="file-alert" style="display: none">
+  							The selected file is not .CSV
+						</div>
+						<div class="alert alert-danger mt-2" role="alert" id="file-upload-error" style="display: none">
+  							Error uploading file
+						</div>
+						<div class="alert alert-success mt-2" role="alert"  id="file-upload-success" style="display: none">
+  							Import success, new users added: <strong>%users%</strong>
+						</div>
+
 					</div>
 				</div>
 
@@ -549,7 +571,8 @@ foreach ($flts as $flt)
 						<div class="text-center card card-body collapse" id="credits" data-parent="#collapses">
 							<p>
 								Developed by:<br>
-								<strong>Donat Marko</strong> (<a href="https://ivao.aero/Member.aspx?Id=540147" target="_blank">540147</a>)
+								<strong>Donat Marko</strong> (<a href="https://ivao.aero/Member.aspx?Id=540147" target="_blank">540147</a>)<br/>
+								<strong>Francesco Maida</strong> (<a href="https://efem.dev" target="_blank">efem.dev</a>)<br/>
 							</p>
 							<p>
 								Ideas, recommendations:<br>

@@ -35,12 +35,14 @@ function flightsTable($airport, $type)
 	if ($type == "arrivals")
 	{
 		$result .= '<th>Origin</th>';
+		$result .= '<th>Departure</th>';
 		$result .= '<th>Arrival</th>';
 	}
 	elseif ($type == "departures")
 	{
 		$result .= '<th>Destination</th>';
 		$result .= '<th>Departure</th>';
+		$result .= '<th>Arrival</th>';
 	}
 	
 	$result .= "	<th>Position</th>
@@ -77,6 +79,7 @@ function flightsTable($airport, $type)
 				$result .= '<td>' . $origin->getCountryFlag(24) . $origin->icao . ' <small class="text-muted">' . $origin->name . '</small></td>';
 			else
 				$result .= '<td>' . $f->originIcao . '</td>';
+			$result .= '<td data-order="' . $f->departureTime . '">' . getHumanDateTime($f->departureTime) . '</td>';						
 			$result .= '<td data-order="' . $f->arrivalTime . '">' . getHumanDateTime($f->arrivalTime) . '</td>';						
 		}
 		elseif ($type == "departures")
@@ -87,6 +90,7 @@ function flightsTable($airport, $type)
 				$result .= '<td>' . $f->destinationIcao . '</td>';
 
 			$result .= '<td data-order="' . $f->departureTime . '">' . getHumanDateTime($f->departureTime) . '</td>';						
+			$result .= '<td data-order="' . $f->arrivalTime . '">' . getHumanDateTime($f->arrivalTime) . '</td>';						
 		}
 		
 		$result .= '<td>' . $f->getPosition() . '</td>';

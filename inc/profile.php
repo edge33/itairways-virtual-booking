@@ -48,6 +48,14 @@
 					</td>
 				</tr>
 				<tr>
+					<th>Password</th>
+					<td>
+						<div class="input-group">
+							<input class="form-control" type="password" id="txtPassword">
+						</div>
+					</td>
+				</tr>
+				<tr>
 					<th>Privacy setting</th>
 					<td>
 						<input type="checkbox" class="form-check-input" id="chkPrivacy" <?=$u->privacy ? "checked" : ""?>>
