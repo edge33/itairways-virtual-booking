@@ -12,9 +12,9 @@ function removeDirectory($path) {
 }
 
 foreach($files as $file){ // iterate files
-    // if ($file != 'vendor') {
-    is_dir($file) ? removeDirectory($file) : unlink($file);
-    // }
+    if ($file != 'vendor' && $file != 'wipeFiles.php' && $file != 'unzip.php' && $file != 'cleanup.php') {
+        is_dir($file) ? removeDirectory($file) : unlink($file);
+    }
 
 }
 echo "ok\n";
