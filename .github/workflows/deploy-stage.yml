@@ -80,15 +80,15 @@ jobs:
         with:
           name: vendor.tar
 
+      - name: List files
+        run: ls -la
+
+
       - name: Extract deps
         run: |
           - tar -xf node_modules.tar
           - tar -xf vendor.tar
 
-
-      
-      - name: List files
-        run: ls -la
       
       - name: Zip production app
         run: zip -rq app.zip contents/* css/* img/* inc/* js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
