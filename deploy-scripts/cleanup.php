@@ -1,7 +1,7 @@
 <?php
 
 $basePath = './';
-$files = [$basePath . 'app.zip', 'cleanup.php', 'unzip.php'];
+$files = [$basePath . 'app.zip', 'cleanup.php', 'unzip.php', 'wipeFiles.php'];
 
 function removeDirectory($path)
 {
