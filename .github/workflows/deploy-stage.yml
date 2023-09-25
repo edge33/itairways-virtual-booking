@@ -86,8 +86,8 @@ jobs:
 
       - name: Extract deps
         run: |
-          - tar -xf node_modules.tar
-          - tar -xf vendor.tar
+          tar -xf node_modules.tar
+          tar -xf vendor.tar
 
       
       - name: Zip production app
