@@ -10,12 +10,12 @@ function removeDirectory($path) {
     }
     rmdir($path);;
 }
+$filesToExclude = ['wipeFiles.php', 'unzip.php', 'cleanup.php', "config-inc.php"];
 
 foreach($files as $file){ // iterate files
-    if ($file != 'wipeFiles.php' && $file != 'unzip.php' && $file != 'cleanup.php') {
+    if (!in_array($file, $filesToExclude)) {
         is_dir($file) ? removeDirectory($file) : unlink($file);
-    }
-
+    }    
 }
 echo "ok\n";
 

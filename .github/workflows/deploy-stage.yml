@@ -91,7 +91,7 @@ jobs:
 
       
       - name: Zip production app
-        run: zip -rq app.zip contents/* css/* img/* inc/* js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
+        run: zip -rq app.zip contents/* contents/.htaccess css/* img/* inc/* inc/.htaccess js/* node_modules/* vendor/* .htaccess index.php login_ivao.php
 
 
       - name: Zip deploy helper scripts
