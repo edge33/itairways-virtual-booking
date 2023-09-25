@@ -68,8 +68,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Prepare
-        run: sudo apt-get -y install zip unzip lftp tar
-        
+        run: sudo apt-get -y install zip lftp
+
       - name: Download node_modules
         uses: actions/download-artifact@v3
         with:
@@ -82,8 +82,8 @@ jobs:
 
       - name: Extract deps
         run: |
-          - tar -x node_modules.tar
-          - tar -x vendor.tar
+          - tar -xf node_modules.tar
+          - tar -xf vendor.tar
 
 
       
