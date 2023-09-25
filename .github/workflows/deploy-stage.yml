@@ -80,10 +80,6 @@ jobs:
         with:
           name: vendor.tar
 
-      - name: List files
-        run: ls -la
-
-
       - name: Extract deps
         run: |
           tar -xf node_modules.tar

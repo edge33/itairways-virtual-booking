@@ -331,8 +331,14 @@ class User
 	public function UpdateEmail($array)
 	{
 		global $db;
-		$query = "UPDATE users SET email='" . $array["email"] . "' WHERE vid=" . $this->vid;
-		return $db->GetSQL()->query($query) ? 0 : -1;
+		$query = "UPDATE users SET email = ? WHERE vid = ?";
+		$statement = $db->getSQL()->prepare($query);
+		$statement->bind_param("ss", $array["email"], $this->vid);
+		$result = $statement->execute();
+
+		$statement->close();
+
+		return $result ? 0 : -1;
 	}
 	
 	/**
