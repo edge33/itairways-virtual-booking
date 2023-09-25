@@ -70,12 +70,12 @@ jobs:
       - name: Download node_modules
         uses: actions/download-artifact@v3
         with:
-          name: node_modules
+          name: node_modules.tar
 
       - name: Download vendor
         uses: actions/download-artifact@v3
         with:
-          name: vendor
+          name: vendor.tar
 
       - name: Extract deps
         run: |
