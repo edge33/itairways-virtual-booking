@@ -17,11 +17,15 @@ jobs:
           node-version: '20.x'
       - name: Install dependencies
         run: npm ci
+
+      - name: Compress node_modules
+        run: tar cf node_modules.tar node_modules
+
       - name: Upload node-modules
         uses: actions/upload-artifact@v3
         with:
-          name: node_modules
-          path: node_modules
+          name: node_modules.tar
+          path: node_modules.tar
 
 
   build-php:
@@ -47,11 +51,14 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --optimize-autoloader --no-dev
 
+      - name: Compress vendor
+        run: tar cf vendor.tar vendor
+
       - name: Upload vendor
         uses: actions/upload-artifact@v3
         with:
           name: vendor
-          path: vendor
+          path: vendor.tar
 
   deploy:
     needs: [build-node, build-php]
@@ -69,6 +76,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: vendor
+
+      - name: Extract deps
+        run: |
+          - tar -x node_modules.tar
+          - tar -x vendor.tar
 
 
       - name: Prepare
