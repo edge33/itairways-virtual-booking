@@ -258,7 +258,7 @@ class Flight
 		$this->gate = $row["gate"];
 		$this->route = $row["route"];
 		$this->bookedAt = $row["booked_at"];
-		$this->bookedBy = (int)$row["booked_by"];
+		$this->bookedBy = $row["booked_by"];
 		$this->token = $row["token"];
 		$this->isDepartureEstimated = false;
 		$this->isArrivalEstimated = false;
@@ -565,7 +565,7 @@ class Flight
 				else
 				{
 					$token = md5(uniqid($u->vid . date("Y-m-d H:i:s")));
-					$query = "UPDATE flights SET booked=1, booked_by=" . $u->vid .", booked_at=now(), token='" . $token . "' WHERE id=" . $this->id;
+					$query = "UPDATE flights SET booked=1, booked_by='" . $u->vid ."', booked_at=now(), token='" . $token . "' WHERE id=" . $this->id;
 					$this->token = $token;
 					$this->bookedBy = $u->vid;
 

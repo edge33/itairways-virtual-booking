@@ -49,7 +49,7 @@ CREATE TABLE `flights` (
   `gate` varchar(10) NOT NULL,
   `route` text NOT NULL,
   `booked` int(11) NOT NULL COMMENT '0-free, 1-prebooked, 2-booked',
-  `booked_by` int(11) NOT NULL,
+  `booked_by` VARCHAR(11) NOT NULL,
   `booked_at` datetime NOT NULL,
   `token` text NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
@@ -66,7 +66,7 @@ CREATE TABLE `slots` (
   `gate` varchar(10) NOT NULL,
   `route` text NOT NULL,
   `booked` int(11) NOT NULL COMMENT '0-???, 1-requested, 2-confirmed',
-  `booked_by` int(11) NOT NULL,
+  `booked_by` VARCHAR(11) NOT NULL,
   `booked_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 

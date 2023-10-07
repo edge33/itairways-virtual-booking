@@ -10,7 +10,7 @@ function removeDirectory($path) {
     }
     rmdir($path);;
 }
-$filesToExclude = ['wipeFiles.php', 'unzip.php', 'cleanup.php', "config-inc.php"];
+$filesToExclude = ['wipeFiles.php', 'unzip.php', 'cleanup.php', "config-inc.php", "banner.html", "briefing.html"];
 
 foreach($files as $file){ // iterate files
     if (!in_array($file, $filesToExclude)) {
