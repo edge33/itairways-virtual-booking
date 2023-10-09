@@ -93,6 +93,18 @@ class Session
 		*/
 		if ($config["mode"] != 1)
 		{
+
+			/**
+			 * if requsting to login allow going on
+			 */
+			if ($page === "json") {
+
+				$action = isset($_POST["action"]) ? $_POST["action"] : null;
+				if ($action === "login") {
+					return;
+				}
+			}
+
 			if (Session::LoggedIn() && Session::User()->permission < 2) {
 				Session::Logout();
 				// Session::IVAOLogout();

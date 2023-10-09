@@ -19,9 +19,10 @@ $("#selFltStatus").on("change", function()
 	}
 });
 
-$("#dtpFltDeparture").on("change.datetimepicker", function(e) {
-	$('#dtpFltArrival').datetimepicker('minDate', e.date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 }));
-});
+// $("#dtpFltDeparture").on("change.datetimepicker", function(e) {
+// 	console.log('debug', e.target);
+// 	$('#dtpFltArrival').datetimepicker('minDate', e.date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 }));
+// });
 
 $("#frmFlightNew").submit(function(e) {
 	e.preventDefault();	
