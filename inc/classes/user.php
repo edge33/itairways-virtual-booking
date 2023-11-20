@@ -20,11 +20,33 @@ class User
 	public static function Find($vid)
 	{
 		global $db;
-		if ($query = $db->GetSQL()->query("SELECT * FROM users WHERE vid='" . $vid . "'"))
-		{
-			if ($row = $query->fetch_assoc())
-			return new User($row);
+
+		// Using a prepared statement to prevent SQL injection
+		$query = $db->GetSQL()->prepare("SELECT * FROM users WHERE vid = ?");
+		
+		if ($query) {
+			// Bind the parameter
+			$query->bind_param("s", $vid);
+
+			// Execute the query
+			$query->execute();
+
+			// Get the result set
+			$result = $query->get_result();
+
+			// Fetch the row
+			if ($row = $result->fetch_assoc()) {
+				// Close the prepared statement
+				$query->close();
+
+				// Return a new User instance
+				return new User($row);
+			}
+
+			// Close the prepared statement
+			$query->close();
 		}
+
 		return null;
 	}
 

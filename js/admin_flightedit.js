@@ -48,7 +48,7 @@ function editFlight()
 	var gate = $("#txtFltGate").val().toUpperCase();
 	var route = $("#txtFltRoute").val().toUpperCase();
 	var booked = $("#selFltStatus").val();
-	var bookedBy = Number($("#numFltBookedBy").val());
+	var bookedBy = $("#numFltBookedBy").val();
 	var departure = $("#dtpFltDeparture").datetimepicker("viewDate").format("YYYY-MM-DD HH:mm:00");
 	var arrival = $("#dtpFltArrival").datetimepicker("viewDate").format("YYYY-MM-DD HH:mm:00");
 	var depAuto = $("#chkFltDepartureAuto").is(":checked");

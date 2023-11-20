@@ -82,28 +82,68 @@ class Flight
 	}
 
 	/**
-	 * Creates a new flight.
-	 * @param string[] $array normally $_POST
-	 * @return int error code: 0 = no error, 403 = forbidden (not logged in or not admin), -1 = other error, 1 = booker user does not exist
-	 */
+	* Creates a new flight.
+	* @param string[] $array normally $_POST
+	* @return int error code: 0 = no error, 403 = forbidden (not logged in or not admin), -1 = other error, 1 = booker user does not exist
+	*/
 	public static function Create($array)
 	{
 		global $db;
-		if (Session::LoggedIn() && Session::User()->permission > 1)
-		{
-			if ($array["booked"] > 0 && !User::Find($array["booked_by"]))
+
+		if (Session::LoggedIn() && Session::User()->permission > 1) {
+			// Check if the booked_by user exists
+			if ($array["booked"] > 0 && !User::Find($array["booked_by"])) {
 				return 1;
+			}
 
-			$depTime = $array["departure_estimated"] == "true" ? "null" : $array["departure_time"];
-			$arrTime = $array["arrival_estimated"] == "true" ? "null" : $array["arrival_time"];
+			$depTime = $array["departure_estimated"] == "true" ? "" : $array["departure_time"];
+			$arrTime = $array["arrival_estimated"] == "true" ? "" : $array["arrival_time"];
 
-			if ($db->GetSQL()->query("INSERT INTO flights (flight_number, callsign, origin_icao, destination_icao, departure_time, arrival_time, aircraft_icao, aircraft_freighter, terminal, gate, route, booked, booked_by, booked_at) VALUES ('" . $array["flight_number"] . "', '" . $array["callsign"] . "', '" . $array["origin_icao"] . "', '" . $array["destination_icao"] . "', '" . $depTime . "', '" . $arrTime . "', '" . $array["aircraft_icao"] . "', " . $array["aircraft_freighter"] . ", '" . $array["terminal"] . "', '" . $array["gate"] . "', '" . $array["route"] . "', " . $array["booked"] . ", " . $array["booked_by"] . ", NOW())"))
-				return 0;
+			// Use a prepared statement to prevent SQL injection
+			$sql = "INSERT INTO flights 
+					(flight_number, callsign, origin_icao, destination_icao, departure_time, arrival_time, aircraft_icao, aircraft_freighter, terminal, gate, route, booked, booked_by, booked_at) 
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
+			$params = [
+				"sssssssisssss", // Types of parameters
+				$array["flight_number"],
+				$array["callsign"],
+				$array["origin_icao"],
+				$array["destination_icao"],
+				$depTime,
+				$arrTime,
+				$array["aircraft_icao"],
+				$array["aircraft_freighter"] == "true" ? 1 : 0,
+				$array["terminal"],
+				$array["gate"],
+				$array["route"],
+				$array["booked"],
+				$array["booked_by"]
+			];
+
+			// Use a prepared statement to prevent SQL injection
+			$stmt = $db->GetSQL()->prepare($sql);
+			if ($stmt) {
+				// Bind parameters
+				$stmt->bind_param(...$params);
+
+				// Execute the query
+				$result = $stmt->execute();
+
+				// Close the prepared statement
+				$stmt->close();
+
+				if ($result) {
+					return 0; // Success
+				}
+			}
+		} else {
+			return 403; // Forbidden
 		}
-		else
-			return 403;
-		return -1;
+
+		return -1; // Other error
 	}
+
 
 	/**
 	 * This function processes the received flight booking token and acts accordingly
@@ -667,25 +707,93 @@ class Flight
 	public function Update($array)
 	{
 		global $db;
-		if (Session::LoggedIn() && Session::User()->permission > 1)
-		{
-			if ($array["booked"] > 0 && !User::Find($array["booked_by"]))
+
+		if (Session::LoggedIn() && Session::User()->permission > 1) {
+			// Check if the booked_by user exists
+			if ($array["booked"] > 0 && !User::Find($array["booked_by"])) {
 				return 1;
+			}
 
-			$depTime = $array["departure_estimated"] == "true" ? "null" : $array["departure_time"];
-			$arrTime = $array["arrival_estimated"] == "true" ? "null" : $array["arrival_time"];
+			$depTime = $array["departure_estimated"] == "true" ? "" : $array["departure_time"];
+			$arrTime = $array["arrival_estimated"] == "true" ? "" : $array["arrival_time"];
 
-			if ($array["booked_by"] == $this->bookedBy)
-				$sql = "UPDATE flights SET flight_number='" . $array["flight_number"] . "', callsign='" . $array["callsign"] . "', origin_icao='" . $array["origin_icao"] . "', destination_icao='" . $array["destination_icao"] . "', departure_time='" . $depTime . "', arrival_time='" . $arrTime . "', aircraft_icao='" . $array["aircraft_icao"] . "', aircraft_freighter=" . $array["aircraft_freighter"] . ", terminal='" . $array["terminal"] . "', gate='" . $array["gate"] . "', route='" . $array["route"] . "', booked=" . $array["booked"] . " WHERE id=" . $array["id"];
-			else
-				$sql = "UPDATE flights SET flight_number='" . $array["flight_number"] . "', callsign='" . $array["callsign"] . "', origin_icao='" . $array["origin_icao"] . "', destination_icao='" . $array["destination_icao"] . "', departure_time='" . $depTime . "', arrival_time='" . $arrTime . "', aircraft_icao='" . $array["aircraft_icao"] . "', aircraft_freighter=" . $array["aircraft_freighter"] . ", terminal='" . $array["terminal"] . "', gate='" . $array["gate"] . "', route='" . $array["route"] . "', booked=" . $array["booked"] . ", booked_by=" . $array["booked_by"] . ", booked_at=NOW() WHERE id=" . $array["id"];
+			// Use a prepared statement to prevent SQL injection
+			$sql = "UPDATE flights SET 
+				flight_number=?, 
+				callsign=?, 
+				origin_icao=?, 
+				destination_icao=?, 
+				departure_time=?, 
+				arrival_time=?, 
+				aircraft_icao=?, 
+				aircraft_freighter=?, 
+				terminal=?, 
+				gate=?, 
+				route=?, 
+				booked=?";
 
-			if ($db->GetSQL()->query($sql))
-				return 0;
+			// Add booked_by and booked_at only if there is a change in booking status
+			if ($array["booked_by"] == $this->bookedBy) {
+				$sql .= " WHERE id=?";
+				$params = [
+					"sssssssissssd", // Types of parameters
+					$array["flight_number"],
+					$array["callsign"],
+					$array["origin_icao"],
+					$array["destination_icao"],
+					$depTime,
+					$arrTime,
+					$array["aircraft_icao"],
+					$array["aircraft_freighter"] == "true" ? 1 : 0,
+					$array["terminal"],
+					$array["gate"],
+					$array["route"],
+					$array["booked"],
+					$array["id"]
+				];
+			} else {
+				$sql .= ", booked_by=?, booked_at=NOW() WHERE id=?";
+				$params = [
+					"sssssssisssssd", // Types of parameters
+					$array["flight_number"],
+					$array["callsign"],
+					$array["origin_icao"],
+					$array["destination_icao"],
+					$depTime,
+					$arrTime,
+					$array["aircraft_icao"],
+					$array["aircraft_freighter"] == "true" ? 1 : 0,
+					$array["terminal"],
+					$array["gate"],
+					$array["route"],
+					$array["booked"],
+					$array["booked_by"],
+					$array["id"]
+				];
+			}
+
+			// Use a prepared statement to prevent SQL injection
+			$stmt = $db->GetSQL()->prepare($sql);
+
+			if ($stmt) {
+				// Bind parameters
+				$stmt->bind_param(...$params);
+
+				// Execute the query
+				$result = $stmt->execute();
+
+				// Close the prepared statement
+				$stmt->close();
+
+				if ($result) {
+					return 0; // Success
+				}
+			}
+		} else {
+			return 403; // Forbidden
 		}
-		else
-			return 403;
-		return -1;
+
+		return -1; // Other error
 	}
 
 	/**

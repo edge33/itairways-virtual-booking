@@ -114,7 +114,7 @@
 					</select>
 				</div>
 				<div class="col">
-					<input class="form-control" id="numFltBookedBy" type="number" placeholder="VID of booker" maxlength="6">
+					<input class="form-control" id="numFltBookedBy" type="text" placeholder="Callsign of booker" maxlength="10">
 				</div>										
 			</div>
 		</div>
